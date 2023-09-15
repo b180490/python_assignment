@@ -1,0 +1,53 @@
+Q7. What is Python? Name some features of Python and Explain how it different
+than Java or any other languages?
+
+
+A  :    Python is an interpreted and dynamically typed language, whereas Java is a compiled and statically typed language.
+
+Python code doesn’t need to be compiled before being run. Java code, on the other hand, needs to be compiled from code readable by humans to code readable by the machine.
+
+Simply put, this generally means that Python has faster launch time and slower run time, while Java has slower launch time and faster run time.
+
+
+Q8. What are the supported data types in python?
+
+A   :    Numeric : int , float , complex
+         string : str()
+         collection data type : list , tuple , dictionary , set
+
+
+Q9.  What is difference between list, tuple? Is array in C is same as list in Python?
+
+A   :    A list is of an ordered collection data type
+that is mutable which means it can be easily modified
+and we can change its data values and a list can
+be indexed, sliced, and changed and each element can
+be accessed using its index value in the list.
+
+1. Python lists are resizable, C++ arrays are not
+2. C++ arrays are a contiguous allocation of objects in memory, Python lists are a contiguous allocation of references in memory
+
+
+
+
+
+The following are the main characteristics of a List:
+
+The list is an ordered collection of data types.
+The list is mutable.
+List are dynamic and can contain objects of different data types.
+List elements can be accessed by index number.
+
+
+A tuple is an ordered and an immutable data type
+which means we cannot change its values and tuples are
+written in round brackets. We can access tuple by
+referring to the index number inside the square brackets.
+
+The following are the main characteristics of a Tuple:
+
+Tuples are immutable and can store any type of data type.
+it is defined using ().
+it cannot be changed or replaced as it is an immutable data type.
+
+
