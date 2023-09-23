@@ -1,0 +1,56 @@
+Q5 : What is numpy and how it is better than list in python? What are ways of creating 1D, 2D
+and 3D arrays in numpy?
+
+A : numPy Arrays are faster than Python Lists because of the following reasons:
+
+1. An array is a collection of homogeneous
+data-types that are stored in contiguous memory
+locations. On the other hand, a list in Python
+is a collection of heterogeneous data types
+stored in non-contiguous memory locations.
+
+2. The NumPy package breaks down a task into
+multiple fragments and then processes all the
+fragments parallelly.
+
+
+3. The NumPy package integrates C, C++, and
+Fortran codes in Python. These programming
+languages have very little execution time
+compared to Python.
+
+
+1D array creation :
+import numpy as np
+one_dimensional_list = [1,2,4]
+one_dimensional_arr = np.array(one_dimensional_list)
+print("1D array is : ",one_dimensional_arr)
+
+2D array creation :
+import numpy as np
+two_dimensional_list=[[1,2,3],[4,5,6]]
+two_dimensional_arr = np.array(two_dimensional_list)
+print("2D array is : ",two_dimensional_arr)
+
+3D array creation :
+import numpy as np
+three_dimensional_list=[[[1,2,3],[4,5,6],[7,8,9]]]
+three_dimensional_arr = np.array(three_dimensional_list)
+print("3D array is : ",three_dimensional_arr)
+
+
+
+
+
+
+Q6 :  Can we have public, private, protected, static in Python classes?
+
+A  :  Python supports three types of access
+modifiers which are public,private and
+protected. These access modifiers provide
+restrictions on the access of member variables
+and methods of the class from any object
+outside the class.
+
+
+
