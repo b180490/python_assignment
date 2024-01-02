@@ -1,0 +1,113 @@
+
+Assignment 4:
+
+
+
+
+Create a file named "data.txt" and write the following lines in it(write as it is).
+
+Linux is open source.
+In Linux everything is file
+files have permissions.
+files have inode no.
+files have size.
+there are several types of files
+
+
+
+
+1)count the no. of words ,characters and lines from above 2 file.(man wc)
+->   
+
+wc -w data.txt
+25 data.txt
+
+wc -l data.txt
+7 data.txt
+
+wc -w data.txt
+25 data.txt
+
+
+
+2)list the lines having word "files" (man grep)
+->
+
+grep -n files data.txt
+4:files have permissions.
+5:files have inode no.
+6:files have size.
+7:there are several types of files
+
+
+3)list the lines having word "file" (man grep)
+->
+
+grep -w file data.txt
+In Linux everything is file
+
+
+4)list the lines which don't have word "files" (man grep)
+->
+grep -nv "files" data.txt
+2:Linux is open source.
+3:In Linux everything is file
+
+
+
+5)list the lines having word "have" . (man grep)
+->
+
+grep -w have data.txt
+files have permissions.
+files have inode no.
+files have size.
+
+
+6)list the lines starts with letter "f" (man grep)
+->
+
+grep -n ^f data.txt
+4:files have permissions.
+5:files have inode no.
+6:files have size.
+
+
+7)list the lines ends with "." (man grep)
+->
+grep -n "\.$" data.txt
+2:Linux is open source.
+4:files have permissions.
+5:files have inode no.
+6:files have size.
+
+
+
+
+8)list only first two lines.(man head)
+->
+
+head -n 2 data.txt 
+Linux is open source.
+In Linux everything is file
+
+
+
+9)list only last three lines.(man tail)
+->
+tail -n 3 data.txt 
+files have inode no.
+files have size.
+there are several types of files
+
+
+
+10)list line no.3,4 and 5 . (man head and tail)
+->
+
+head -n 5 data.txt | tail -n 3 
+files have permissions.
+files have inode no.
+files have size.
+
+

@@ -1,0 +1,173 @@
+Assignment 1 
+
+
+1. List the directory contents date wise sorted. ( man ls)
+-> ls -t
+
+2. List the directory contents size wise sorted.(man ls)
+-> ls -S
+
+3. List directory contents along with their inode no. (man ls)
+-> ls -i
+
+4. List the contents of the subdirectory.
+-> ls /etc
+
+
+
+5. Create a file, write your surname and name in it and
+save.
+->
+
+touch file
+vim file
+esc + i
+esc + : + wq
+
+
+i. now open the same file and add your address in it and
+save.
+->
+
+vim file
+esc + i
+esc + : + wq
+
+
+ii. reopen the same file and check your name and address in
+it.
+->vim file
+esc 
+
+6. how to change the time stamp of file (man touch)
+->
+touch -t 202312200515 file
+
+
+7. Create directory structure : Give following commands ,
+-> mkdir one  
+-> cd one
+-> touch 1.txt 11.txt 111.txt
+-> mkdir two
+-> cd two
+-> touch 2.txt 22.txt 222.txt
+-> mkdir three
+-> cd three
+-> touch 3.txt 33.txt 333.txt
+-> mkdir four
+-> cd four
+-> touch 4.txt 44.txt 444.txt
+-> mkdir five
+-> cd five
+-> touch 5.txt 55.txt 555.txt
+-> cd ~ (i.e. go to your home directory)
+
+
+
+ 
+8. Considering above directory structure , Do following
+operations :
+
+i. list the directory contents of directory named
+"five" from current directory (i.e. home directory).
+
+-> 
+cd ../../../../..
+ls ~/one/two/three/four/five
+
+ii. write your name in a file named "44.txt" of
+directory "four" from current directory.
+->
+cd ~/one/two/three/four
+vim 44.txt
+esc + i
+esc
+esc + : + wq
+vim 44.txt
+esc
+
+
+iii. remove the file named "555.txt" from directory
+"five" from current directory.
+->
+
+cd five/
+rm 555.txt
+
+
+iv. change directory to five
+one/two/three/four/five/ ).
+( i.e. cd
+
+-> cd ~/one/two/three/four/five
+
+
+v. write your course name in file named "3.txt" which
+resides in directory "three" from current directory (i.e.
+five).also read the same file.
+->
+
+cd ../..
+vim 3.txt
+esc + i
+esc
+esc + : + wq
+
+vi. list the contents of directory "two" from current
+directory (i.e. five).
+->
+
+cd ../../..
+ls
+
+
+vii. remove file named "222.txt" which belongs to
+directory "two" from current directory (i.e. five)
+->
+rm 222.txt
+
+
+viii. now change the directory to "one"
+->
+cd ..
+
+ix. remove all files only from directory named "five"
+from current directory (i.e. one)
+
+->
+rm two/three/four/five/* 
+
+
+x. remove directory named "five" from current directory
+(i.e. one)
+->
+
+rmdir two/three/four/five
+
+
+xi. remove whole directory named "four" from current
+directory (i.e. one)
+->
+
+rm -rf two/three/four
+
+
+xii. change to your home directory.
+->
+
+cd ../../..
+
+
+
+9. change the time stamp of file named "3.txt" which resides
+in directory named "three".(man touch)
+->
+
+cd one/two/three/
+stat 3.txt
+touch -t 12120600 3.txt 
+stat 3.txt
+
+
+
+
