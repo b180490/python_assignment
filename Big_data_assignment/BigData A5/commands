@@ -1,0 +1,171 @@
+2) 
+create table emp_job_part(
+empno int ,
+ename string ,
+mgr int , 
+hire date,
+sal double , 
+comm double,
+deptno int
+)
+partitioned by (job string)
+row format delimited fields terminated by ","
+stored as textfile;
+
+insert into emp_job_part partition(job)
+select empno , ename , mgr , hire , sal , comm , deptno , job from emp_staging;
+
+
+
+3)
+
+create table emp_job_dept_part(
+empno int , 
+ename string , 
+mgr int , 
+hire date,
+sal double , 
+comm double
+)
+partitioned by (job string , deptno int)
+clustered by (empno) into 2 buckets
+row format delimited fields terminated by ","
+stored as textfile;
+
+insert into emp_job_dept_part partition(job , deptno)
+select id , name , mgr , hire_date  , sal , comm , job , deptno from emp_staging;
+
+
+4)
+
+create table fire_staging(
+Call_Number INT,
+Unit_ID STRING,
+Incident_Number INT,
+Call_Type STRING,
+Call_Date STRING,
+Watch_Date STRING,
+Received_DtTm STRING,
+Entry_DtTm STRING,
+Dispatch_DtTm STRING,
+Response_DtTm STRING,
+On_Scene_DtTm STRING,
+Transport_DtTm STRING,
+Hospital_DtTm STRING,
+Call_Final_Disposition STRING,
+Available_DtTm STRING,
+Address STRING,
+City STRING,
+Zipcode_of_Incident INT,
+Battalion STRING,
+Station_Area STRING,
+Box INT,
+Original_Priority INT,
+Priority INT,
+Final_Priority INT,
+ALS_Unit STRING,
+Call_Type_Group STRING ,
+Number_of_Alarms INT,
+Unit_Type STRING,
+Unit_sequence_in_call_dispatch INT,
+Fire_Prevention_District INT,
+Supervisor_District INT,
+Neighborhooods_Analysis_Boundaries STRING,
+RowID STRING,
+case_location STRING,
+data_as_of STRING,
+data_loaded_at STRING,
+Analysis_Neighborhoods STRING
+)
+row format delimited fields terminated by ","
+stored as textfile
+TBLPROPERTIES('skip.header.line.count'='1');
+
+load data local inpath "/home/john/Desktop/Every_Day_Notes/BigData/data/Fire_calls.csv"
+into table fire_staging;
+
+
+5)
+
+create table rnd_fire_data(
+Call_Number INT,
+Unit_ID STRING,
+Incident_Number INT,
+Call_Type STRING,
+Call_Date DATE,
+Watch_Date DATE,
+Received_DtTm TIMESTAMP,
+Entry_DtTm TIMESTAMP,
+Dispatch_DtTm TIMESTAMP,
+Response_DtTm TIMESTAMP,
+On_Scene_DtTm TIMESTAMP,
+Transport_DtTm TIMESTAMP,
+Hospital_DtTm TIMESTAMP,
+Call_Final_Disposition STRING,
+Available_DtTm TIMESTAMP,
+Address STRING,
+Zipcode_of_Incident INT,
+Battalion STRING,
+Station_Area STRING,
+Box INT,
+Original_Priority INT,
+Priority INT,
+Final_Priority INT,
+ALS_Unit STRING,
+Call_Type_Group STRING ,
+Number_of_Alarms INT,
+Unit_Type STRING,
+Unit_sequence_in_call_dispatch INT,
+Fire_Prevention_District INT,
+Supervisor_District INT,
+Neighborhooods_Analysis_Boundaries STRING,
+RowID STRING,
+case_location STRING,
+data_as_of STRING,
+data_loaded_at TIMESTAMP,
+Analysis_Neighborhoods STRING
+)
+partitioned by (CITY STRING)
+clustered by (Call_number) into 4 buckets
+stored as orc;
+
+
+insert into fire_data
+select
+Call_Number ,
+Unit_ID ,
+Incident_Number ,
+Call_Type ,
+Call_Date ,
+Watch_Date ,
+Received_DtTm ,
+Entry_DtTm ,
+Dispatch_DtTm ,
+Response_DtTm ,
+On_Scene_DtTm,
+Transport_DtTm ,
+Hospital_DtTm ,
+Call_Final_Disposition ,
+Available_DtTm ,
+Address ,
+Zipcode_of_Incident,
+Battalion ,
+Station_Area ,
+Box,
+Original_Priority,
+Priority,
+Final_Priority,
+ALS_Unit,
+Call_Type_Group ,
+Number_of_Alarms,
+Unit_Type STRING,
+Unit_sequence_in_call_dispatch,
+Fire_Prevention_District,
+Supervisor_District,
+Neighborhooods_Analysis_Boundaries,
+RowID STRING,
+case_location,
+data_as_of,
+data_loaded_at,
+Analysis_Neighborhoods,
+CITY from fire_staging;

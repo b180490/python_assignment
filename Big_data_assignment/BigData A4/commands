@@ -1,0 +1,311 @@
+1. Create table "books_staging" and load books.csv in it.
+
+create table  books_staging (
+book_id int , 
+book_name string,
+author_name string , 
+subject string,
+price double
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ","
+STORED AS TEXTFILE;
+
+
+load data local inpath "/home/john/Desktop/Every Day Notes/BigData/data/books.csv" into table books_staging;
+
+
+
+2. Create table "books_orc" as transactional table.
+
+create table books_orc(
+book_id smallint,
+book_name string ,
+author_name string ,
+subject string,
+price double
+)
+STORED AS ORC
+TBLPROPERTIES ('transactional'='true')
+
+insert into books_orc
+select * from books_staging;
+
+
+3. Create a materialized view for summary -- Subjectwise average book price.
+
+CREATE MATERIALIZED VIEW mv_sub_avg as
+select subject , avg(price) from books_orc
+group by subject;
+
+
++---------------------+--------------------+
+| mv_sub_avg.subject  |   mv_sub_avg._c1   |
++---------------------+--------------------+
+| C Programming       | 242.20275          |
+| C++ Programming     | 675.214            |
+| Java Programming    | 519.67             |
+| Operating Systems   | 447.3836666666666  |
++---------------------+--------------------+
+
+
+
+
+4. Display a report that shows subject and average price in descending order -- on materialized view.
+
+
+select * from mv_sub_avg order by `_c1` desc;
+
++---------------------+--------------------+
+| mv_sub_avg.subject  |   mv_sub_avg._c1   |
++---------------------+--------------------+
+| C++ Programming     | 675.214            |
+| Java Programming    | 519.67             |
+| Operating Systems   | 447.3836666666666  |
+| C Programming       | 242.20275          |
++---------------------+--------------------+
+
+
+
+
+
+5. Create a new file newbooks.csv.
+
+20,Atlas Shrugged,Ayn Rand,Novel,723.90
+21,The Fountainhead,Ayn Rand,Novel,923.80
+22,The Archer,Paulo Cohelo,Novel,623.94
+23,The Alchemist,Paulo Cohelo,Novel,634.80
+
+
+6. Upload the file newbooks.csv into books_staging.
+
+
+load data local inpath '/home/john/Desktop/Assign_submit/BigData A4/newbooks.csv' into table books_staging;
+
+
+7. Insert "new" records from books_staging into books_orc.
+
+
+insert into books_orc select *  from books_staging where book_id not in (select book_id from books_orc) ;
+(not working)
+
+
+
+insert into books_orc select *  from books_staging where book_id in (20,21,22,23);
+
+
+8. Display a report that shows subject and average price in descending order -- on materialized view. -- Are new books visible in report?
+
+
+SELECT * FROM mv_sub_avg;
+
+| mv_sub_avg.subject  |   mv_sub_avg._c1   |
++---------------------+--------------------+
+| C Programming       | 242.20275          |
+| C++ Programming     | 675.214            |
+| Java Programming    | 519.67             |
+| Operating Systems   | 447.3836666666666  |
++---------------------+--------------------+
+
+
+
+
+9. Rebuild the materialized view.
+
+ALTER MATERIALIZED VIEW mv_sub_avg rebuild;
+
+
+
+
+
+10. Display a report that shows subject and average price in descending order -- on materialized view. -- Are new books visible in report?
+
+
+SELECT * FROM mv_sub_avg;
+
++---------------------+--------------------+
+| mv_sub_avg.subject  |   mv_sub_avg._c1   |
++---------------------+--------------------+
+| C Programming       | 242.20275          |
+| C++ Programming     | 675.214            |
+| Java Programming    | 519.67             |
+| Novel               | 726.6099999999999  |
+| Operating Systems   | 447.3836666666666  |
++---------------------+--------------------+
+
+
+
+11. Increase price of all Java books by 10% in books_orc.
+
+
+update books_orc set price = price + (price * 0.1)
+where subject = "Java Programming";
+
+
+
+
+12. Rebuild the materialized view.
+
+
+ALTER MATERIALIZED VIEW mv_sub_avg rebuild;
+
+
+
+
+13. Display a report that shows subject and average price in descending order -- on materialized view. -- Are new price changes visible in report?
+
+SELECT * FROM mv_sub_avg order by `_c1` desc;
+
++---------------------+--------------------+
+| mv_sub_avg.subject  |   mv_sub_avg._c1   |
++---------------------+--------------------+
+| Novel               | 726.6099999999999  |
+| C++ Programming     | 675.214            |
+| Java Programming    | 519.67             |
+| Operating Systems   | 447.3836666666666  |
+| C Programming       | 242.20275          |
++---------------------+--------------------+
+
+
+
+
+14. Delete all Java books.
+
+delete from books_orc where subject="Java Programming";
+
+
+15. Rebuild the materialized view.
+
+
+ALTER MATERIALIZED VIEW mv_sub_avg rebuild;
+
+
+
+
+16. Display a report that shows subject and average price in descending order -- on materialized view. -- Are new price changes visible in report?
+
+
+SELECT * FROM mv_sub_avg order by `_c1` desc;
+
++---------------------+--------------------+
+| mv_sub_avg.subject  |   mv_sub_avg._c1   |
++---------------------+--------------------+
+| Novel               | 799.271            |
+| C++ Programming     | 742.7353999999999  |
+| Operating Systems   | 492.1220333333333  |
+| C Programming       | 266.423025         |
++---------------------+--------------------+
+
+
+
+
+17. Upload movies data into HDFS directory (not in hive warehouse).
+
+
+hadoop fs -mkdir -p /user/john/movies/movies_input
+
+hadoop fs -put '/home/john/Desktop/Every Day Notes/BigData/data/movies/movies.csv'  '/user/john/movies/movies_input'
+
+(spacing issues ? ) (not working)
+
+
+
+
+hadoop fs -mkdir -p /user/john/movies/movies_input
+
+hadoop fs -put /home/john/Desktop/movies.csv  '/user/john/movies/movies_input'
+
+18. Create external table movies1 with schema - id INT, title STRING, genres STRING.
+Find number of 'Action' movies.
+
+create external table movies1 (
+id int , 
+title String ,
+genres String 
+)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+   "separatorChar" = ',',
+   "quoteChar"     = '"',
+   "escapeChar"    = '\\'
+)
+STORED AS TEXTFILE
+LOCATION '/user/john/movies/movies_input'
+TBLPROPERTIES('skip.header.line.count'='1');
+
+
+SELECT count(id) FROM movies1 where genres regexp "[Action]";
++-------+
+|  _c0  |
++-------+
+| 7842  |
++-------+
+
+
+
+
+
+19. Create external table movies2 with schema - id INT, title STRING, genres ARRAY<STRING>.
+Find number of movies having single genre.
+
+
+ 
+hadoop fs -mkdir -p /user/john/movies/movies_caret_input
+
+hadoop fs -put /home/john/Desktop/movies_caret.csv /user/john/movies/movies_caret_input
+
+create external table movies2 (
+id int , 
+title String ,
+genres ARRAY<STRING> 
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '^'
+COLLECTION ITEMS TERMINATED BY '|'
+STORED AS TEXTFILE
+LOCATION '/user/john/movies/movies_caret_input'
+TBLPROPERTIES('skip.header.line.count'='1');
+
+
+select count(id) from  movies2  where size(genres) = 1;
+
++-------+
+|  _c0  |
++-------+
+| 2793  |
++-------+
+
+
+
+
+20. Upload busstops.json data into HDFS directory. Then create hive external table to fetch data using JsonSerDe.
+
+hadoop fs -mkdir -p /user/john/json/bustops_json
+
+hadoop fs -put /home/john/Desktop/bus.json  '/user/john/json/bustops_json'
+
+
+CREATE EXTERNAL TABLE bus_stops(
+`_id` STRUCT<`$oid`:STRING>,
+stop String,
+code String,
+seq double,
+stage double ,
+name String , 
+location STRUCT<type:STRING, coordinates:ARRAY<DOUBLE>>
+)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+STORED AS TEXTFILE
+LOCATION '/user/john/json/bustops_json';
+
+select * from bus_stops limit 2;
+ 
+----------------------------------+
+|            bus_stops._id             | bus_stops.stop  | bus_stops.code  | bus_stops.seq  | bus_stops.stage  |    bus_stops.name     |                 bus_stops.location                 |
++--------------------------------------+-----------------+-----------------+----------------+------------------+-----------------------+----------------------------------------------------+
+| {"$oid":"5a0720b478597fc11004d951"}  | Non-BRTS        | 103B-D-04       | 4.0            | 1.0              | Aranyeshwar Corner    | {"type":"Point","coordinates":[73.857675,18.486381]} |
+| {"$oid":"5a0720b478597fc11004d952"}  | Non-BRTS        | 103B-D-05       | 5.0            | 2.0              | Natubaug              | {"type":"Point","coordinates":[73.857167,18.48103]} |
+ 
+
+
+research : 
+ 
+`_id` MAP<STRING,STRING>

@@ -1,0 +1,483 @@
+fire_calls decreased to 50000 calls
+select from_unixtime(unix_timestamp('3/7/2008 4:05:37 PM' , 'MM/dd/yyyy hh:mm:ss a'));
+FROM_UNIXTIME(UNIX_TIMESTAMP(Dispatch_DtTm, 'MM/dd/yyyy hh:mm:ss a'), 'yyyy-MM-dd hh:mm:ss') AS Dispatch_DtTm,
+
+1) 
+
+select count(distinct(call_type)) from fire_data;
+
+
+
+2)
+
+select distinct(Call_type) from fire_data;
+
++--------------------------------------+
+|              call_type               |
++--------------------------------------+
+| "Extrication / Entrapped (Machinery  |
+| Administrative                       |
+| Aircraft Emergency                   |
+| Alarms                               |
+| Assist Police                        |
+| Citizen Assist / Service Call        |
+| Confined Space / Structure Collapse  |
+| Electrical Hazard                    |
+| Elevator / Escalator Rescue          |
+| Explosion                            |
+| Fuel Spill                           |
+| Gas Leak (Natural and LP Gases)      |
+| HazMat                               |
+| High Angle Rescue                    |
+| Industrial Accidents                 |
+| Marine Fire                          |
+| Medical Incident                     |
+| Mutual Aid / Assist Outside Agency   |
+| Odor (Strange / Unknown)             |
+| Oil Spill                            |
+| Other                                |
+| Outside Fire                         |
+| Smoke Investigation (Outside)        |
+| Structure Fire                       |
+| Structure Fire / Smoke in Building   |
+| Suspicious Package                   |
+| Traffic Collision                    |
+| Train / Rail Incident                |
+| Vehicle Fire                         |
+| Water Rescue                         |
+| Watercraft in Distress               |
++--------------------------------------+
+
+3)
+select Dispatch_DtTm , Response_DtTm from fire_data; 
+
+
+create table rnd_fire_data(
+Call_Number INT,
+Unit_ID STRING,
+Incident_Number INT,
+Call_Type STRING,
+Call_Date DATE,
+Watch_Date DATE,
+Received_DtTm TIMESTAMP,
+Entry_DtTm TIMESTAMP,
+Dispatch_DtTm TIMESTAMP,
+Response_DtTm TIMESTAMP,
+On_Scene_DtTm TIMESTAMP,
+Transport_DtTm TIMESTAMP,
+Hospital_DtTm TIMESTAMP,
+Call_Final_Disposition STRING,
+Available_DtTm TIMESTAMP,
+Address STRING,
+Zipcode_of_Incident INT,
+Battalion STRING,
+Station_Area STRING,
+Box INT,
+Original_Priority INT,
+Priority INT,
+Final_Priority INT,
+ALS_Unit STRING,
+Call_Type_Group STRING ,
+Number_of_Alarms INT,
+Unit_Type STRING,
+Unit_sequence_in_call_dispatch INT,
+Fire_Prevention_District INT,
+Supervisor_District INT,
+Neighborhooods_Analysis_Boundaries STRING,
+RowID STRING,
+case_location STRING,
+data_as_of STRING,
+data_loaded_at TIMESTAMP,
+Analysis_Neighborhoods STRING
+)
+partitioned by (CITY STRING)
+clustered by (Call_number) into 4 buckets
+stored as orc;
+
+
+INSERT INTO TABLE rnd_fire_data
+SELECT
+    call_number,
+    unit_id,
+    incident_number,
+    call_type,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(call_date, 'MM/dd/yyyy'), 'yyyy-MM-dd') AS call_date,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(watch_date, 'MM/dd/yyyy'), 'yyyy-MM-dd') AS watch_date,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(Received_DtTm, 'MM/dd/yyyy hh:mm:ss a')) AS Received_DtTm,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(Entry_DtTm, 'MM/dd/yyyy hh:mm:ss a')) AS Entry_DtTm,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(Dispatch_DtTm, 'MM/dd/yyyy hh:mm:ss a')) AS Dispatch_DtTm,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(Response_DtTm, 'MM/dd/yyyy hh:mm:ss a')) AS Response_DtTm,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(On_Scene_DtTm, 'MM/dd/yyyy hh:mm:ss a')) AS On_Scene_DtTm,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(Transport_DtTm, 'MM/dd/yyyy hh:mm:ss a')) AS Transport_DtTm,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(Hospital_DtTm, 'MM/dd/yyyy hh:mm:ss a')) AS Hospital_DtTm,
+    call_final_disposition,
+    FROM_UNIXTIME(UNIX_TIMESTAMP(Available_DtTm, 'MM/dd/yyyy hh:mm:ss a')) AS Available_DtTm,
+    address,
+    zipcode_of_incident,
+    battalion,
+    station_area,
+    box,
+    original_priority,
+    priority,
+    final_priority,
+    als_unit,
+    call_type_group,
+    number_of_alarms,
+    unit_type,
+    unit_sequence_in_call_dispatch,
+    fire_prevention_district,
+    supervisor_district,
+    Neighborhooods_Analysis_Boundaries,
+    RowID,
+    case_location,
+    data_as_of,
+    from_unixtime(unix_timestamp(data_loaded_at ,'MM/dd/yyyy hh:mm:ss a' )) as data_loaded_at,
+    analysis_neighborhoods,
+    city
+FROM fire_staging;
+
+
+select incident_number , ((unix_timestamp(Dispatch_DtTm , 'hh:mm:ss') - unix_timestamp(Received_DtTm , 'hh:mm:ss'))/60) as response_time  from rnd_fire_data where  ((unix_timestamp(Dispatch_DtTm , 'hh:mm:ss') - unix_timestamp(Received_DtTm , 'hh:mm:ss'))/60) > 5;
+
+
++------------------+---------------------+
+| incident_number  |    response_time    |
++------------------+---------------------+
+| 9018594          | 7.116666666666666   |
+| 9055584          | 9.533333333333333   |
+| 23174438         | 5.933333333333334   |
+| 18077787         | 6.95                |
+| 23172249         | 22.716666666666665  |
+| 23172249         | 22.716666666666665  |
+| 23169805         | 9.766666666666667   |
+| 23166177         | 14.016666666666667  |
+| 23164922         | 5.65                |
+| 23162828         | 7.116666666666666   |
++------------------+---------------------+
+ 
+ 4,288 rows selected (1.376 seconds)
+
+
+4) select call_type , count(call_type) as count  from rnd_fire_data  group by call_type  order by count(call_type) desc limit 1;
+
+
++-------------------+--------+
+|     call_type     | count  |
++-------------------+--------+
+| Medical Incident  | 29688  |
++-------------------+--------+
+
+
+
+
+5) select Zipcode_of_Incident , count(incident_number) as count from rnd_fire_data order by count(incident_number) desc limit 5;
+
+
+select Zipcode_of_Incident , count(incident_number) as count from rnd_fire_data order by count(incident_number) desc limit 5;
+
+
++----------------------+--------+
+| zipcode_of_incident  | count  |
++----------------------+--------+
+| 94103                | 6757   |
+| 94102                | 6698   |
+| 94109                | 5030   |
+| 94110                | 4123   |
+| 94124                | 2230   |
++----------------------+--------+
+
+6) 
+
+select Zipcode_of_Incident , analysis_neighborhoods , city from rnd_fire_data where Zipcode_of_Incident in (94102 , 94103);
+
+13,455 rows selected (1.452 seconds)
+
++----------------------+-------------------------+----------------+
+| zipcode_of_incident  | analysis_neighborhoods  |      city      |
++----------------------+-------------------------+----------------+
+| 94102                | 9                       | FM             |
+| 94102                | 9                       | FM             |
+| 94102                | 9                       | Fort Mason     |
+| 94102                | 36                      | SAN FRANCISCO  |
+| 94103                | 20                      | SAN FRANCISCO  |
++----------------------+-------------------------+----------------+
+
+
+7)
+
+
+
+select max(unix_timestamp(Response_DtTm , 'hh:mm:ss')) + avg(unix_timestamp(Response_DtTm , 'hh:mm:ss')) +
+sum(unix_timestamp(Response_DtTm , 'hh:mm:ss')) + min(unix_timestamp(Response_DtTm , 'hh:mm:ss')) as total_time from rnd_fire_data;
+
++-----------------------+
+|      total_time       |
++-----------------------+
+| 7.284638056216755E13  |
++-----------------------+
+
+
+8)
+
+select distinct(year(call_date)) as years from rnd_fire_data;
+
++--------+
+| years  |
++--------+
+| NULL   |
+| 2000   |
+| 2001   |
+| 2002   |
+| 2003   |
+| 2004   |
+| 2005   |
+| 2006   |
+| 2007   |
+| 2008   |
+| 2009   |
+| 2010   |
+| 2011   |
+| 2012   |
+| 2013   |
+| 2014   |
+| 2015   |
+| 2016   |
+| 2017   |
+| 2018   |
+| 2019   |
+| 2020   |
+| 2021   |
+| 2022   |
+| 2023   |
++--------+
+
+
+9) select weekofyear(call_date) from rnd_fire_data
+where year(call_date) = "2018";
+
+
++------+
+| _c0  |
++------+
+| 41   |
+| 41   |
+| 27   |
+| 44   |
+| 48   |
+| 20   |
+| 30   |
+| 23   |
+| 7    |
+| 27   |
++------+
+
+
+704 rows selected
+
+10) select analysis_neighborhoods , (unix_timestamp(Dispatch_DtTm , 'hh:mm:ss') - unix_timestamp(Received_DtTm , 'hh:mm:ss'))
+where city = "San Franciso"
+from rnd_fire_data 
+order by (unix_timestamp(Dispatch_DtTm , 'hh:mm:ss') - unix_timestamp(Received_DtTm , 'hh:mm:ss')) desc
+limit 1;  
+
+
+
+
+11)
+
+with max_sal_dept(deptno , max_sal) as  (    select deptno , max(sal) as max_sal from emp group by deptno  ) select e.ename , e.sal from emp e
+inner join max_sal_dept msd on e.deptno = msd.deptno where e.sal = msd.max_sal;
+
++-------+---------+
+| ename | sal     |
++-------+---------+
+| BLAKE | 2850.00 |
+| SCOTT | 3000.00 |
+| KING  | 5000.00 |
+| FORD  | 3000.00 |
++-------+---------+
+
+12)
+
+with avg_dept_sal(deptno , avg_sal) as(
+    select deptno , avg(sal) as avg_sal from emp group by deptno
+)
+select distinct(e1.deptno) , ads.avg_sal from emp as e1 
+inner join avg_dept_sal as ads on e1.deptno = ads.deptno; 
+
++--------+-------------+
+| deptno | avg_sal     |
++--------+-------------+
+|     10 | 2916.666667 |
+|     20 | 2215.000000 |
+|     30 | 1566.666667 |
++--------+-------------+
+
+
+13)
+
+with avg_sal_dept(deptno , avg_dept_sal) as (
+select deptno , avg(sal) as avg_dept_sal from emp group by deptno	
+)
+,avg_sal_job(job , avg_job_sal) as (
+select job , avg(sal) as avg_job_sal from emp group by job
+)
+select e.ename , e.job , asd.avg_dept_sal , asj.avg_job_sal from emp as e
+inner join avg_sal_dept as asd on e.deptno = asd.deptno
+inner join avg_sal_job as asj on e.job = asj.job
+order by e.job ;
+
+******************************************************
+with avg_sal_dept(deptno , avg_dept_sal) as (
+select deptno , avg(sal) as avg_dept_sal from emp_staging group by deptno	
+)
+,avg_sal_job(job , avg_job_sal) as (
+select job , avg(sal) as avg_job_sal from emp_staging group by job
+)
+select e.name , e.job , asd.avg_dept_sal , asj.avg_job_sal from emp_staging as e
+inner join avg_sal_dept as asd on e.deptno = asd.deptno
+inner join avg_sal_job as asj on e.job = asj.job
+order by e.job ;
+
+
+
+
++--------+-----------+--------------+-------------+
+| ename  | job       | avg_dept_sal | avg_job_sal |
++--------+-----------+--------------+-------------+
+| SCOTT  | ANALYST   |  2215.000000 | 3000.000000 |
+| FORD   | ANALYST   |  2215.000000 | 3000.000000 |
+| SMITH  | CLERK     |  2215.000000 | 1087.500000 |
+| ADAMS  | CLERK     |  2215.000000 | 1087.500000 |
+| JAMES  | CLERK     |  1566.666667 | 1087.500000 |
+| MILLER | CLERK     |  2916.666667 | 1087.500000 |
+| JONES  | MANAGER   |  2215.000000 | 2758.333333 |
+| BLAKE  | MANAGER   |  1566.666667 | 2758.333333 |
+| CLARK  | MANAGER   |  2916.666667 | 2758.333333 |
+| KING   | PRESIDENT |  2916.666667 | 5000.000000 |
+| ALLEN  | SALESMAN  |  1566.666667 | 1400.000000 |
+| WARD   | SALESMAN  |  1566.666667 | 1400.000000 |
+| MARTIN | SALESMAN  |  1566.666667 | 1400.000000 |
+| TURNER | SALESMAN  |  1566.666667 | 1400.000000 |
++--------+-----------+--------------+-------------+
+
+14)
+
+
+with emp_category as( 
+select ename , sal , 
+case 
+when sal < 1500 then "POOR"
+when (sal >= 1500 and sal <= 2500) then "Middle"
+when sal > 2500 then "RICH"
+END AS CATEGORY
+from emp)
+select * from emp_category
+;
+
++--------+---------+----------+
+| ename  | sal     | CATEGORY |
++--------+---------+----------+
+| SMITH  | 1000.00 | POOR     |
+| ALLEN  | 1600.00 | Middle   |
+| WARD   | 1250.00 | POOR     |
+| JONES  | 2975.00 | RICH     |
+| MARTIN | 1250.00 | POOR     |
+| BLAKE  | 2850.00 | RICH     |
+| CLARK  | 2450.00 | Middle   |
+| SCOTT  | 3000.00 | RICH     |
+| KING   | 5000.00 | RICH     |
+| TURNER | 1500.00 | Middle   |
+| ADAMS  | 1100.00 | POOR     |
+| JAMES  |  950.00 | POOR     |
+| FORD   | 3000.00 | RICH     |
+| MILLER | 1300.00 | POOR     |
++--------+---------+----------+
+
+
+15)
+with emp_category as( 
+select empno , ename , sal , deptno ,
+case 
+when sal < 1500 then "POOR"
+when (sal >= 1500 and sal <= 2500) then "Middle"
+when sal > 2500 then "RICH"
+END AS CATEGORY
+from emp)
+select ec.empno , ec.ename , d.dname , ec.sal , ec.CATEGORY
+from emp_category as ec inner join dept as d on ec.deptno = d.deptno 
+;
+
++-------+--------+------------+---------+----------+
+| empno | ename  | dname      | sal     | CATEGORY |
++-------+--------+------------+---------+----------+
+|  7934 | MILLER | ACCOUNTING | 1300.00 | POOR     |
+|  7782 | CLARK  | ACCOUNTING | 2450.00 | Middle   |
+|  7839 | KING   | ACCOUNTING | 5000.00 | RICH     |
+|  7788 | SCOTT  | RESEARCH   | 3000.00 | RICH     |
+|  7902 | FORD   | RESEARCH   | 3000.00 | RICH     |
+|  7369 | SMITH  | RESEARCH   | 1000.00 | POOR     |
+|  7876 | ADAMS  | RESEARCH   | 1100.00 | POOR     |
+|  7566 | JONES  | RESEARCH   | 2975.00 | RICH     |
+|  7900 | JAMES  | SALES      |  950.00 | POOR     |
+|  7698 | BLAKE  | SALES      | 2850.00 | RICH     |
+|  7499 | ALLEN  | SALES      | 1600.00 | Middle   |
+|  7521 | WARD   | SALES      | 1250.00 | POOR     |
+|  7654 | MARTIN | SALES      | 1250.00 | POOR     |
+|  7844 | TURNER | SALES      | 1500.00 | Middle   |
++-------+--------+------------+---------+----------+
+
+
+16)
+
+with emp_category as( 
+select empno , ename , sal , deptno ,
+case 
+when sal < 1500 then "POOR"
+when (sal >= 1500 and sal <= 2500) then "Middle"
+when sal > 2500 then "RICH"
+END AS CATEGORY
+from emp)
+select d.dname , ec.CATEGORY , count(ec.empno)
+from emp_category as ec inner join dept as d on ec.deptno = d.deptno 
+group by d.dname , ec.CATEGORY
+;
+
+
++------------+----------+-----------------+
+| dname      | CATEGORY | count(ec.empno) |
++------------+----------+-----------------+
+| ACCOUNTING | POOR     |               1 |
+| ACCOUNTING | Middle   |               1 |
+| ACCOUNTING | RICH     |               1 |
+| RESEARCH   | RICH     |               3 |
+| RESEARCH   | POOR     |               2 |
+| SALES      | POOR     |               3 |
+| SALES      | RICH     |               1 |
+| SALES      | Middle   |               2 |
++------------+----------+-----------------+
+
+
+
+
+FIBONACCI
+
+
+
+
+with recursive fibonacci(num1 , num2) as 
+(
+select 0 as num1 , 1 as num2 
+union all
+select (num2) as  num1 , (num1 + num2) as num2 from fibonacci where (num2+num1) < 100
+)
+select 0 num1 union all
+select num2 from fibonacci;  
+
+
+with recursive fibonacci(num1 , num2) as  
+( select 0 as num1 , 1 as num2  
+union all 
+select (num2) as  num1 , (num1 + num2) as num2 from fibonacci 
+where (num2) < 100) 
+select num1 from fibonacci;

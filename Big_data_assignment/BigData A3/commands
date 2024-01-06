@@ -1,0 +1,91 @@
+create table rating_staging(
+userid int,
+movieid int , 
+rating double,
+time_stamp timestamp
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+
+LOAD DATA LOCAL INPATH '/home/john/Desktop/Lab Assignments/Day3 BigData/movies_list.csv' into  table rating_staging;
+
+1)
+select userid , movieid , rating from rating_staging;
+
+
++---------+----------+---------+
+| userid  | movieid  | rating  |
++---------+----------+---------+
+| 17      | 70       | 3.0     |
+| 35      | 21       | 1.0     |
+| 49      | 19       | 2.0     |
+| 49      | 21       | 1.0     |
+| 49      | 70       | 4.0     |
+| 87      | 19       | 1.0     |
+| 87      | 21       | 2.0     |
+| 98      | 19       | 2.0     |
++---------+----------+---------+
+
+
+
+2)
+
+select userid  , group_concat(movieid seperator ',') from rating_staging group by userid; 
+ 
+
+
+select rs.userid  , group_concat(rs.movieid separator ', ') as movie_id_list from rating_staging as rs group by rs.userid;
+
+
+
+
+
+
+
+
+
+3)
+
+select rs1.movieid , rs2.movieid , rs1.rating , rs2.rating from rating_staging rs1 inner join rating_staging rs2 on rs1.userid = rs2.userid where rs1.movieid < rs.movieid;
+
+
+
+create table rating_eval(
+movie_1_id int,
+movie_2_id int , 
+rating_1 double,
+rating_2 double 
+)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+insert into rating_eval select rs1.movieid , rs2.movieid , rs1.rating , rs2.rating from rating_staging rs1 inner join rating_staging rs2 on rs1.userid = rs2.userid where rs1.movieid < rs2.movieid;
+
+
++-------------------------+-------------------------+-----------------------+-----------------------+
+| rating_eval.movie_1_id  | rating_eval.movie_2_id  | rating_eval.rating_1  | rating_eval.rating_2  |
++-------------------------+-------------------------+-----------------------+-----------------------+
+| 19                      | 21                      | 2.0                   | 1.0                   |
+| 19                      | 70                      | 2.0                   | 4.0                   |
+| 21                      | 70                      | 1.0                   | 4.0                   |
+| 19                      | 21                      | 1.0                   | 2.0                   |
++-------------------------+-------------------------+-----------------------+-----------------------+
+
+
+
+
+
+4) select movie_1_id , movie_2_id , count(*) , corr(rating_1 , rating_2) from rating_eval group by movie_1_id , movie_2_id;
+
++-------------+-------------+------+----------------------+
+| movie_1_id  | movie_2_id  | _c2  |         _c3          |
++-------------+-------------+------+----------------------+
+| 19          | 21          | 2    | -0.9999999999999999  |
+| 19          | 70          | 1    | NULL                 |
+| 21          | 70          | 1    | NULL                 |
++-------------+-------------+------+----------------------+
+
+
+
+
